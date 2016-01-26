@@ -1186,10 +1186,43 @@ input[placeholder], [placeholder], *[placeholder] {
 }
 .ganacias_ini3{
 	width: 67%;
-	margin-left: 2.5%;
-	color: #DDD;
+	margin-left: 2%;
+	font-size: 14px;
+	color: #BBB;
 	display: inline-block;
 	vertical-align: top;
+}
+.ganacias_ini4{
+	width: 29%;
+	display: inline-block;
+	text-align: right;
+	padding-right: 1%;
+	vertical-align: top;
+}
+.ganancias_ini5{
+	width: 68%;
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
+}
+.ganacias_ini7{
+	width: 90%;
+	color: #000;
+	display: inline-block;
+	vertical-align: top;
+}
+.ganacias_ini8{
+	width: 9.5%;
+	display: inline-block;
+	text-align: right;
+	padding-right: 1%;
+	vertical-align: top;
+}
+.ganancias_ini9{
+	width: 87%;
+    display: inline-block;
+    vertical-align: top;
+    text-align: left;
 }
 .campb option {
     font-weight: 300 !important;
@@ -1204,6 +1237,11 @@ input[placeholder], [placeholder], *[placeholder] {
 	margin:10px auto;
 	width: 70%;
 	border-top:solid 1px #F1F1F1;
+}
+.borde_de_abajo{
+	border-bottom:solid 1px #000;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
 }
 .hospitalx {
 	margin: 0px;

@@ -273,7 +273,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
 
 <div class="clientes-menu">
-  <a class="clientes-menu-item2"><?php echo $row["contacto"].' '.$row["apellido_materno"]; ?></a>
+  <a class="clientes-menu-item2"><?php echo $row["contacto"].' <br> '.$row["apellido_materno"].' <br> '.$row["apellido_paterno"]; ?></a>
   <a href="agregar-cliente.php?tipo=mod&id=<?= $id?>&seccion=1" class="clientes-menu-item">Perfil Personal</a>
   <a href="agregar-cliente.php?tipo=mod&id=<?= $id?>&seccion=2" class="clientes-menu-item">Perfil Laboral</a>
   <a href="agregar-cliente.php?tipo=mod&id=<?= $id?>&seccion=3" class="clientes-menu-item">Perfil Económico</a>
@@ -369,11 +369,11 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
         <div class="camp_ext_ini_item">
             <strong>Estado civil:</strong> <?php echo $row["estado_civil"];?><br>
             <?php 
-                if ($row["estado_civil"] == 'Casado' || $row["estado_civil"] == 'Union_Libre') {
+                //if ($row["estado_civil"] == 'Casado' || $row["estado_civil"] == 'Union_Libre') {
                 $ingresos_mens = $row["ganancias_mes"]+$row["otros_ingresos_monto"]+$row["pareja_ganancia"];
                 $egresos_mens = $row["eg_casa_mensualidad"]+$row["eg_casa_servicios"]+$row["eg_alimentacion"]+$row["eg_escuelas"];
                 $egresos_mens = $egresos_mens + $row["eg_carro_mensualidad"] + $row["eg_transporte"] + $row["eg_tagera_credito"];
-                $egresos_mens = $egresos_mens + $row["eg_celulares"] + $row["eg_otros"]
+                $egresos_mens = $egresos_mens + $row["eg_celulares"] + $row["eg_otros"] + $row["parejaex_mensualidad_cant"];
             ?>
             <div class="ganacias_ini0">
               <div class="ganacias_ini1">
@@ -384,18 +384,86 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
                   <div class="ganacias_ini3">
                         <?php echo $row["ganancias_mes"].' Ingresos - '.$row["otros_ingresos_monto"].' Otros Ingresos - '.$row["pareja_ganancia"].' Pareja'?>
                   </div>
-                  <div class="ganacias_ini2">
-                        <div class="ganacias_ini4">$<?php echo $row[""];?></div>
+                  <div class="ganacias_ini2 borde_de_abajo">
+                        <div class="ganacias_ini4">$<?php echo $egresos_mens;?></div>
                         <div class="ganancias_ini5">Egresos Mensuales</div>
                   </div>
                   <div class="ganacias_ini3">
-                        <?php echo $row["ganancias_mes"].''.$row["otros_ingresos_monto"].''.$row["pareja_ganancia"]?>
+                        <?php 
+                        echo $row["eg_casa_mensualidad"].' Mensualidad Casa - '.$row["eg_casa_servicios"].' Servicios - '.$row["eg_alimentacion"].' Alimentacion - ';
+                        if($row["eg_escuelas"] != '' && $row["eg_escuelas"] != '0'){$row["eg_escuelas"].' Escuelas - ';};
+                        if($row["eg_carro_mensualidad"] != '' && $row["eg_carro_mensualidad"] != '0'){$row["eg_carro_mensualidad"].' Carro - ';};
+                        if($row["eg_transporte"] != '' && $row["eg_transporte"] != '0'){$row["eg_transporte"].' Transporte - ';};
+                        if($row["eg_tagera_credito"] != '' && $row["eg_tagera_credito"] != '0'){$row["eg_tagera_credito"].' Tarjeta de Credito - ';};
+                        if($row["eg_celulares"] != '' && $row["eg_celulares"] != '0'){$row["eg_celulares"].' Celulares - ';};
+                        if($row["parejaex_mensualidad_cant"] != '' && $row["parejaex_mensualidad_cant"] != '0'){$row["parejaex_mensualidad_cant"].' Mensualidad a Ex Pareja - ';};                        
+                        ?>
                   </div>
               </div>
-              <div class="ganacias_ini1"></div>
-              <div class="ganacias_ini1"></div>
-              <div class="ganacias_ini1"></div>
+              <div class="ganacias_ini1">
+                  <div class="ganacias_ini7">
+                        <div class="ganacias_ini8">$<?php echo $ingresos_mens-$egresos_mens;?></div>
+                        <div class="ganancias_ini9">Disponibles Mensuales</div>
+                  </div>
+              </div>
+              <div class="ganacias_ini1">
+                  <div class="ganacias_ini7">
+                        <div class="ganacias_ini8">$<?php echo $row["dinero_disponible"];?></div>
+                        <div class="ganancias_ini9">Cliente dice que dispone para pagar el crédito</div>
+                  </div>
+              </div>
             </div>
+            <?php //};?>
+        </div>
+        <div class="camp_ext_ini_item">
+          <strong>Propiedades</strong>
+          <?php $ralla_prop = 0;
+              $sql4 = "SELECT * FROM referencias WHERE cliente='".$id."' ORDER BY id DESC ";
+              $result4 = mysql_query($sql4, $conn1);
+              while($row4 = mysql_fetch_array($result4)){
+                $ralla_prop = $ralla_prop + 1;
+              };
+            ?>
+        </div>
+        <div class="camp_ext_ini_item">
+                  <strong>Referencias Personales</strong>
+
+            <?php $ralla_ref = 0;
+              $sql3 = "SELECT * FROM referencias WHERE cliente='".$id."' ORDER BY id DESC ";
+              $result3 = mysql_query($sql3, $conn1);
+              while($row3 = mysql_fetch_array($result3)){
+                $ralla_ref = $ralla_ref + 1;
+            ?>
+              <?php if($ralla_ref != '1'){?><div class="separacion-rallada"></div><?php };?>
+                <strong><?php 
+                    if($row3["tipo"] == 'familiar_vive_ud'){echo ') Familiar que vive con usted )';};
+                    if($row3["tipo"] == 'familiar_no_vive_ud'){echo '( Familiar que no vive con usted )';};
+                    if($row3["tipo"] == 'comp_trabajo'){echo '( Compañero de Trabajo )';};
+                    if($row3["tipo"] == 'amigo'){echo '( Amigo )';};
+                ?></strong>
+                <?= $row3["nombre"]?><br>
+                <strong>Domicilio: </strong>   <?= $row3["domicilio"]?><br>
+                <strong>Parentesco: </strong> <?= $row3["parentesco"]?><br>
+                <strong>Celular: </strong> <?= $row3["celular"]?><br>
+                <strong>Telefono: </strong> <?= $row3["telefono"]?><br>
+                <a><strong>Ver Mapa</strong></a>
+                
+            <?php };?>
+        </div>
+        <div class="camp_ext_ini_item">
+                  <strong>Referencias Crediticias</strong>
+
+            <?php $ralla_ref = 0;
+              $sql3 = "SELECT * FROM referencias_crediticias WHERE cliente='".$id."' ORDER BY id DESC ";
+              $result3 = mysql_query($sql3, $conn1);
+              while($row3 = mysql_fetch_array($result3)){
+                $ralla_ref = $ralla_ref + 1;
+            ?>
+              <?php if($ralla_ref != '1'){?><div class="separacion-rallada"></div><?php };?>
+                <strong>Numero de Tarjeta: </strong>   <?= $row3["num_tarjeta"]?><br>
+                <strong>Institucion: </strong> <?= $row3["institucion"]?><br>
+                <strong>Limite de crédito exacto: </strong> <?= $row3["limite_credito"]?><br>
+                
             <?php };?>
         </div>
     </div>

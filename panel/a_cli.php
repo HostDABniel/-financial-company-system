@@ -20,8 +20,8 @@ if($_SESSION["tipo"] == 'admin') {
 
 	if ($id == ''){ 
 
-$sql11 = "INSERT INTO cliente(contacto, apellido_materno, fecha_nacimiento, sexo, lugar_nacimiento, celular, rfc, email, CURP, como_entero) 
-VALUES('".$_POST["contacto"]."', '".$_POST["apellido_materno"]."','".$_POST["fecha_nacimiento"]."', '".$_POST["sexo"]."', 
+$sql11 = "INSERT INTO cliente(contacto, apellido_materno, apellido_paterno, fecha_nacimiento, sexo, lugar_nacimiento, celular, rfc, email, CURP, como_entero) 
+VALUES('".$_POST["contacto"]."', '".$_POST["apellido_materno"]."', '".$_POST["apellido_paterno"]."','".$_POST["fecha_nacimiento"]."', '".$_POST["sexo"]."', 
 	'".$fecha_nacimiento."', '".$_POST["celular"]."', '".$_POST["rfc"]."', '".$_POST["email"]."', '".$_POST["CURP"]."', 
 	'".$_POST["como_entero"]."')";
 /*
@@ -69,7 +69,16 @@ $result = mysql_query($sql11);
 								
 	}else{
 		if($seccion == '1'){
-			$sql1 = "UPDATE cliente SET contacto='".$_POST["contacto"]."', apellido_materno='".$_POST["apellido_materno"]."', 
+			$sql1 = "UPDATE cliente SET email='".$_POST["email"]."',  celular='".$_POST["celular"]."', telefono='".$_POST["telefono"]."', rfc='".$rfc."',  
+			CURP='".$_POST["CURP"]."', como_entero='".$_POST["como_entero"]."', numero_dependientes='".$_POST["numero_dependientes"]."', 
+			num_personas_tech='".$_POST["num_personas_tech"]."', salud_problemas='".$_POST["salud_problemas"]."',
+			salud_comentario='".$_POST["salud_comentario"]."', tipo_casa='".$_POST["tipo_casa"]."', 
+			arrendador_nombre='".$_POST["arrendador_nombre"]."', arrendador_celular='".$_POST["arrendador_celular"]."',
+			familiar_nombre='".$_POST["familiar_nombre"]."', familiar_parentesco='".$_POST["familiar_parentesco"]."', 
+			familiar_domicilio='".$_POST["familiar_domicilio"]."', familiar_referencia_dom='".$_POST["familiar_referencia_dom"]."' 
+			WHERE id=".$id;	
+			/*$sql1 = "UPDATE cliente SET contacto='".$_POST["contacto"]."', apellido_materno='".$_POST["apellido_materno"]."',  
+			apellido_paterno='".$_POST["apellido_paterno"]."',
 			lugar_nacimiento='".$_POST["lugar_nacimiento"]."', fecha_nacimiento='".$fecha_nacimiento."', sexo='".$_POST["sexo"]."',
 			email='".$_POST["email"]."',  celular='".$_POST["celular"]."', telefono='".$_POST["telefono"]."', rfc='".$rfc."',  
 			CURP='".$_POST["CURP"]."', como_entero='".$_POST["como_entero"]."', numero_dependientes='".$_POST["numero_dependientes"]."', 
@@ -78,7 +87,7 @@ $result = mysql_query($sql11);
 			arrendador_nombre='".$_POST["arrendador_nombre"]."', arrendador_celular='".$_POST["arrendador_celular"]."',
 			familiar_nombre='".$_POST["familiar_nombre"]."', familiar_parentesco='".$_POST["familiar_parentesco"]."', 
 			familiar_domicilio='".$_POST["familiar_domicilio"]."', familiar_referencia_dom='".$_POST["familiar_referencia_dom"]."' 
-			WHERE id=".$id;				
+			WHERE id=".$id;	*/			
 			$result = mysql_query($sql1);
 			$hasta_donde = $_POST["numero_domicilios"] + 1;
 			for ($i=1; $i < $hasta_donde; $i++) { // DOMICILIOS
@@ -87,7 +96,9 @@ $result = mysql_query($sql11);
 					$domicilioid = "domicilio".$i;  $domicilio = $_POST[$domicilioid];
 					$callesid = "calles".$i;  $calles = $_POST[$callesid];
 					$lat_longid = "lat_long".$i;  $lat_long = $_POST[$lat_longid];
-						$desde_cuandoid = "desde_cuando".$i;  $desde_cuando = $_POST[$desde_cuandoid];
+						$desde_cuando_a_id = "desde_cuando_a_".$i;  $desde_cuando_a = $_POST[$desde_cuando_a_id];
+						$desde_cuando_m_id = "desde_cuando_m_".$i;  $desde_cuando_m = $_POST[$desde_cuando_m_id];
+						$desde_cuando = $desde_cuando_a.'-'.$desde_cuando_m.'-01';
 					if($id_dom == ''){ $x=2;
 						$sql12 = "INSERT INTO domicilio(cliente, domicilio, calles, lat_long, desde_cuando) 
 						VALUES('".$id."', '".$domicilio."','".$calles."', '".$lat_long."', '".$desde_cuando."')";

@@ -34,6 +34,21 @@ if ($id != ''){
 
 <!------------------------------------------------------------    Mapa SELECCIONABLE      ---------------------------------------- -->
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+
+<script type="text/javascript">
+///////////// FUNCION QUE PASA EL VALOR DE LAT Y LONG DEL MARKADOR DEL MAPA AL INPUT PARA QUE SEA PROCESADO EN EL FORMULARIO
+function valo(){
+          var cant_don =  document.getElementById("numero_domicilios").value;
+          cant_don = parseInt(cant_don);
+            for(i=1;i<cant_don + 1;i++){ 
+              var mensaje = window["marker" + i].getPosition();
+              var lalon = "lat_long" + i;
+              document.getElementById(lalon).value = mensaje;
+            };
+        //var mensaje = marker.getPosition();
+        //document.valore.value=mensaje;        
+}
+</script>
  <script type="text/javascript">
       var script = '<script type="text/javascript" src="src/richmarker';
       if (document.location.search.indexOf('compiled') !== -1) {
@@ -52,14 +67,15 @@ if ($id != ''){
   $result2i = mysql_query($sql2i, $conn1);
   $total_registros2i = mysql_num_rows($result2i);
   $cant_dom_map_ini0 = 0;
-  if($row2i["lat_long"] == ''){
-        $lat_act = '29.0824736' ; $long_act = '-110.96222'; $dist_act = '12'; 
-  };
+  $lat_act = '29.0824736' ; $long_act = '-110.96222'; $dist_act = '12'; 
   ?>
       /**
        * Called on the intiial page load.
        */
-<?php while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_map_ini0 + 1;?>       
+<?php 
+  while($row2i = mysql_fetch_array($result2i)){  
+  $cant_dom_map_ini0 = $cant_dom_map_ini0 + 1;
+?>       
       var map<?= $cant_dom_map_ini0?>;
       var marker<?= $cant_dom_map_ini0?>;
 <?php };?>      
@@ -71,16 +87,31 @@ $sql2i = "SELECT * FROM domicilio WHERE cliente='".$id."' ";
   $result2i = mysql_query($sql2i, $conn1);
   $total_registros2i = mysql_num_rows($result2i);
   $cant_dom_map_ini0 = 0;
-while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_map_ini0 + 1;?> 
+  
+  while($row2i = mysql_fetch_array($result2i)){  
+  $cant_dom_map_ini0 = $cant_dom_map_ini0 + 1;
+
+  if($row2i["lat_long"] == ''){
+        $lat_act = '29.0824736' ; $long_act = '-110.96222'; $dist_act = '12'; 
+  }else{
+        $lati_long0 = str_replace("(", "", $row2i["lat_long"]);
+        $lati_long0 = str_replace(")", "", $lati_long0);
+        $lati_long0 = str_replace(" ", "", $lati_long0);
+        $lati_long1 = explode(",", $lati_long0);
+        $lat_act = $lati_long1[0] ; $long_act = $lati_long1[1]; $dist_act = '15'; 
+  };
+
+?> 
         map<?= $cant_dom_map_ini0?> = new google.maps.Map(document.getElementById('map<?= $cant_dom_map_ini0?>'), {
           zoom: <?php echo $dist_act;?>,
-          center: mapCenter,
+          center: new google.maps.LatLng(<?= $lat_act?>, <?= $long_act?>),
           mapTypeId: google.maps.MapTypeId.ROADMAP
         });
           //mapTypeId: google.maps.MapTypeId.TERRAIN
 
+
         marker<?= $cant_dom_map_ini0?> = new RichMarker({
-          position: mapCenter,<?php //if($row1["lat"] != '' && $row1["long"] != ''){echo 'new google.maps.LatLng('.$lat_act.', '.$long_act.');';}else{ echo 'mapCenter,';};?>
+          position: new google.maps.LatLng(<?= $lat_act?>, <?= $long_act?>),<?php //if($row1["lat"] != '' && $row1["long"] != ''){echo 'new google.maps.LatLng('.$lat_act.', '.$long_act.');';}else{ echo 'mapCenter,';};?>
           map: map<?= $cant_dom_map_ini0?>,
           draggable: true,
           flat: true,
@@ -168,6 +199,40 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
       // Register an event listener to fire when the page finishes loading.
       google.maps.event.addDomListener(window, 'load', init);
+
+
+
+
+
+// function ADD MAS DOMICILIOS
+
+function init_var(i) {
+        //window.yourGlobalVariable = ...; // defino variable local dentro de la funcion
+        //window["cari" + "catos"] = "the number one";// hago una variable compuesta (GLOBAL)
+        // alert(caricatos); // si la llamamos con el alert si se me generaria
+        var mapCenter = new google.maps.LatLng(29.0824736, -110.96222);//Coordenadas del centro del mapa
+
+        window['map' + i]; //Defino variables "marker"
+        var div_del_map = 'map' + i;//nombre del ID de la tabla de map correspondiente
+        window['map' + i] = new google.maps.Map(document.getElementById(div_del_map), {
+          zoom: 12,
+          center: mapCenter,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+          //mapTypeId: google.maps.MapTypeId.TERRAIN
+
+        window['marker' + i] = new RichMarker({
+          position: mapCenter,
+          map: window['map' + i],
+          draggable: true,
+          flat: true,
+          anchor: RichMarkerPosition.MIDDLE,
+          content: '<img src="images/' + 'punterorojo.png" class="puntero_maps"/>'
+          });
+
+};
+
+// FIN function ADD MAS DOMICILIOS
     </script>
     <!------------------------------------------------------------   FIN  Mapa SELECCIONABLE      ---------------------------------------- -->
 
@@ -226,7 +291,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
 
 
-<form method="post" action="panel/a_cli.php?id=<?php echo $id;?>&vi=<?php echo $vi;?>" name="frmRegistro">
+<form method="post" action="panel/a_cli.php?id=<?php echo $id;?>&vi=<?php echo $vi;?>" id="Registro_client" name="frmRegistro">
 <input type="hidden" name="seccion" value="<?= $seccion;?>"/>
 <input type="hidden" name="id" value="<?= $id?>"/>
 
@@ -243,7 +308,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
     <div class="campb">
       <label for="textfield"></label>
       <!--<input type="text" name="vendedor" id="textfield" placeholder="Vendedor asignado:" value="<?php echo $row["vendedor"];?>"/>-->
-      <select name="vendedor" id="textfield"  class="hospitalx" style="height: 44px;">
+      <select name="vendedor" id="textfield"  class="hospitalx">
       <option value="" disabled="disabled" selected>Vendedor </option>
       <?php //  
         $sql9h= "SELECT * FROM vendedor ORDER BY nombre, apellido ASC";
@@ -286,7 +351,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
     <div class="imgcliente"></div>
     <div class="campb111 dosporch">
       <div class="dattaclieti0">
-        <div class="dattaclieti"><strong>Nombre Completo:</strong> <?php echo $row["contacto"].' '.$row["apellido_materno"];?></div>           
+        <div class="dattaclieti"><strong>Nombre Completo:</strong> <?php echo $row["contacto"].' '.$row["apellido_materno"].' '.$row["apellido_paterno"];?></div>           
         <div class="dattaclieti"><strong>Email:</strong> <?php echo $row["email"];?></div>     
         <div class="dattaclieti"><strong>Buro de Credito:</strong> <?php echo $row["buro_credito"];?></div>      
         <div class="dattaclieti"><strong>Buro Interno: </strong> <?php echo $row["buro_interno"];?></div>
@@ -330,11 +395,21 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
             };?>
             <br>
             <?php
-            $sql2 = "SELECT * FROM domicilio WHERE cliente='".$id."' ORDER BY id DESC ";
+            $sql2 = "SELECT * FROM domicilio WHERE cliente='".$id."' ORDER BY id ASC ";
             $result2 = mysql_query($sql2, $conn1);
             $row2 = mysql_fetch_array($result2);
             if($row2["id"] != ''){
-              echo $row2["domicilio"].' ('.$row2["calles"].') Desde: '.$row2["desde_cuando"];
+              echo $row2["domicilio"].' ('.$row2["calles"].') Desde hace  ';
+              //.$row2["desde_cuando"];Y-m-d
+              $fecha_1 = new DateTime($row2["desde_cuando"]);
+              $fecha_2 = new DateTime(date("Y-m-d"));
+              $fecha_0 = date_diff($fecha_1, $fecha_2);//saco la cantidad de años de diferencia
+              $tiempo_a = $fecha_0->y;
+              $tiempo_m = $fecha_0->m;
+              $tiempo_d = $fecha_0->d;
+              if($tiempo_a != 0){   echo $tiempo_a.' año';if($tiempo_a != 1){echo 's';};   }
+              elseif($tiempo_m != 0){   echo $tiempo_m.' mes';if($tiempo_m != 1){echo 'es';};   }
+              elseif($tiempo_d != 0){   echo $tiempo_d.' dia';if($tiempo_d != 1){echo 's';};   };
             };?>
             <div class="separacion-rallada"></div>
             <strong>Horarios de Casa</strong>
@@ -418,12 +493,14 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
         <div class="camp_ext_ini_item">
           <strong>Propiedades</strong>
           <?php $ralla_prop = 0;
-              $sql4 = "SELECT * FROM referencias WHERE cliente='".$id."' ORDER BY id DESC ";
+              $sql4 = "SELECT * FROM carro WHERE cliente='".$id."' ORDER BY id DESC ";
               $result4 = mysql_query($sql4, $conn1);
               while($row4 = mysql_fetch_array($result4)){
                 $ralla_prop = $ralla_prop + 1;
-              };
-            ?>
+                //marca modelo  year  propietario tipo  multas cuando placa num_serie comentarios
+         ?>
+            <div class="separacion-rallada"></div>
+          <?php  };?>
         </div>
         <div class="camp_ext_ini_item">
                   <strong>Referencias Personales</strong>
@@ -485,17 +562,30 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
 <span class="titlecol-ad">Perfil Personal</span>
 
+<?php if ($id != ''){ $desha = 'disabled'; $clase_bl = 'clase_bl';?>
+  <div class="campitem-cliente2">
+    <div class="campd ">
+      <label for="textfield"></label>
+      <div>Folio</div>
+      <input type="text" name="folio" id="textfield" class="hospitalx clase_bl" value="<?php echo $row["id"];?>" disabled/>
+    </div>
+  </div>
+<?php };?>
 
-  <div class="campitem-cliente">
-    <div class="campb">
+  <div class="campitem-cliente2">
+    <div class="campd ">
       <label for="textfield"></label>
       <!--<input type="text" name="folio" id="textfield" placeholder="Folio" value="<?php echo $row["folio"];?>"/>-->
       <div>Nombre</div>
-      <input type="text" name="contacto" placeholder="" value="<?php echo $row["contacto"];?>" class="hospitalx mayusculas"/>
+      <input type="text" name="contacto" value="<?php echo $row["contacto"];?>" class="hospitalx mayusculas <?= $clase_bl?>" <?= $desha?>/>
     </div>
-    <div class="campb dosporch">
-      <div>Apellido</div>
-      <input type="text" name="apellido_materno" class="hospitalx mayusculas" placeholder="" value="<?php echo $row["apellido_materno"];?>"/>
+    <div class="campd  dosporch">
+      <div>Apellido Materno</div>
+      <input type="text" name="apellido_materno" class="hospitalx mayusculas <?= $clase_bl?>"  value="<?php echo $row["apellido_materno"];?>" <?= $desha?>/>
+    </div>
+    <div class="campd  dosporch">
+      <div>Apellido Paterno</div>
+      <input type="text" name="apellido_paterno" class="hospitalx mayusculas <?= $clase_bl?>"  value="<?php echo $row["apellido_paterno"];?>" <?= $desha?>/>
     </div>
   </div>
 
@@ -506,7 +596,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
       <div>Lugar de Nacimiento</div>
       <!--<input type="text" name="apellido_paterno" class="hospitalx mayusculas" placeholder="Apellido Paterno" value="<?php echo $row["apellido_paterno"];?>"/>-->
       <!--<input type="text" name="lugar_nacimiento" id="textfield" placeholder="Lugar Nacimiento:" value="<?php echo $row["lugar_nacimiento"];?>"/>-->
-      <select name="lugar_nacimiento" id="lugar_nacimiento"  class="hospitalx" style="height: 44px;">
+      <select name="lugar_nacimiento" id="lugar_nacimiento"  class="hospitalx <?= $clase_bl?>" <?= $desha?>>
             <option value="0" disabled="disabled" selected>Estado</option>
           <?php
                 $sql2 = "SELECT * FROM estado ORDER BY nombre ASC ";
@@ -522,8 +612,14 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
     </div>
     <div class="campd dosporch">
       <div>Fecha de Nacimiento</div>
+      <?php 
+        $fecha_n_t = explode("-", $row["fecha_nacimiento"]);
+        $dia_ac = $fecha_n_t[2];
+        $mes_ac = $fecha_n_t[1];
+        $mes_a = $fecha_n_t[0];
+      ?>
       <!--<input type="text" name="fecha_nacimiento" id="textfield" placeholder="Fecha Nacimiento:" value="<?php echo $row["fecha_nacimiento"];?>"/>-->
-      <select name="fecha_nacimiento_d" id="fecha_nacimiento_d"  class="hospitalx" style="height: 44px;">
+      <select name="fecha_nacimiento_d" id="fecha_nacimiento_d"  class="hospitalx <?= $clase_bl?>"  <?= $desha?>    >
           <option value="0" disabled="disabled" selected>Dia</option>
           <option value="01" <?php if($dia_ac == '01'){echo 'selected';};?>> 1 </option>
           <option value="02" <?php if($dia_ac == '02'){echo 'selected';};?>> 2 </option>
@@ -557,7 +653,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
           <option value="30" <?php if($dia_ac == '30'){echo 'selected';};?>> 30 </option>
           <option value="31" <?php if($dia_ac == '31'){echo 'selected';};?>> 31 </option>
       </select>
-      <select name="fecha_nacimiento_m" id="fecha_nacimiento_m"  class="hospitalx" style="height: 44px;">
+      <select name="fecha_nacimiento_m" id="fecha_nacimiento_m"  class="hospitalx <?= $clase_bl?>" <?= $desha?>>
           <option value="0" disabled="disabled" selected>Mes</option>
           <option value="01" <?php if($mes_ac == '01'){echo 'selected';};?>> Enero </option>
           <option value="02" <?php if($mes_ac == '02'){echo 'selected';};?>> Febrero </option>
@@ -572,7 +668,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
           <option value="11" <?php if($mes_ac == '11'){echo 'selected';};?>> Noviembre </option>
           <option value="12" <?php if($mes_ac == '12'){echo 'selected';};?>> Diciembre </option>
       </select>
-      <select name="fecha_nacimiento_a" id="fecha_nacimiento_a"  class="hospitalx" style="height: 44px;">
+      <select name="fecha_nacimiento_a" id="fecha_nacimiento_a"  class="hospitalx <?= $clase_bl?>" <?= $desha?>>
           <option value="0" disabled="disabled" selected>Año</option>
           <option value="1941" <?php if($mes_a == '1941'){echo 'selected';};?>> 1941 </option>
           <option value="1942" <?php if($mes_a == '1942'){echo 'selected';};?>> 1942 </option>
@@ -637,9 +733,9 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
     </div>
     <div class="campd dosporch">
       <div>Sexo</div>
-      <select name="sexo"  class="hospitalx">        
-        <option value="h"> Hombre </option>
-        <option value="m"> Mujer </option>
+      <select name="sexo"  class="hospitalx <?= $clase_bl?>" <?= $desha?>>        
+        <option value="h"<?php if($row["sexo"]=='h'){echo 'selected';};?>> Hombre </option>
+        <option value="m"<?php if($row["sexo"]=='m'){echo 'selected';};?>> Mujer </option>
       </select>
     </div>
   </div>
@@ -680,11 +776,22 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
 
 
-   <div class="campitem2">
+   <div class="campitem">
    <div>Como se entero</div>    
-    <div class="campc">
-      <textarea name="como_entero"  cols="" rows="" placeholder=""><?php echo $row["como_entero"];?></textarea>
-      <!--<input type="text" name="como_entero" id="textfield" placeholder="como_entero:" value="<?php echo $row["como_entero"];?>"/>-->
+    <div class="campb">
+      <!--<textarea name="como_entero"  cols="" rows="" placeholder=""><?php echo $row["como_entero"];?></textarea>-->
+      <!--<input type="text" name="como_entero" id="textfield" placeholder="como_entero:" value="<?php echo $row["como_entero"];?>"/>-->      
+      <select name="como_entero"  class="hospitalx">        
+        <option value="lona" <?php if($row["como_entero"] == 'lona'){echo 'selected';}; ?>  > Lona </option>
+        <option value="periodico" <?php if($row["como_entero"] == 'periodico'){echo 'selected';};  ?>  > Periodico </option>      
+        <option value="radio" <?php if($row["como_entero"] == 'radio'){echo 'selected';};  ?>  > Radio </option>      
+        <option value="facebook" <?php if($row["como_entero"] == 'facebook'){echo 'selected';}; ?>  > Facebook </option>      
+        <option value="vendobara" <?php if($row["como_entero"] == 'vendobara'){echo 'selected';};  ?>  > Vendobara </option>   
+        <option value="recomendado" <?php if($row["como_entero"] == 'recomendado'){echo 'selected';};  ?>  > Recomendado </option>   
+        <option value="cambaceo" <?php if($row["como_entero"] == 'cambaceo'){echo 'selected';}; ?>  > Cambaceo </option>   
+        <option value="vio_el_local" <?php if($row["como_entero"] == 'vio_el_local'){echo 'selected';}; ?>  > Vio el local </option>   
+        <option value="otro" <?php if($row["como_entero"] == 'otro'){echo 'selected';}; ?>  > Otro </option>
+      </select>
     </div>
   </div>
 
@@ -718,19 +825,110 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
             </div>
             <div class="campd dosporch">
                 <div>Desde Cuando vives ahi</div>
-                <input type="text" name="desde_cuando<?= $cantidad_dom_w?>" class="hospitalx" value="<?= $row2["desde_cuando"];?>"/>
+                <!--<input type="text" name="desde_cuando<?= $cantidad_dom_w?>" class="hospitalx" value="<?= $row2["desde_cuando"];?>"/>-->
+        <?php             
+            $desde_cuandot = explode("-", $row2["desde_cuando"]);
+  //          echo $row2["desde_cuando"].'<br>';
+//            echo $desde_cuandot[1].'/'.$desde_cuandot[0];
+
+        ?>
+        <select name="desde_cuando_m_<?= $cantidad_dom_w?>" class="hospitalx desde_c" >
+          <option value="0" disabled="disabled" selected>Mes</option>
+          <option value="01" <?php if($desde_cuandot[1] == '01'){echo 'selected';};?>> Enero </option>
+          <option value="02" <?php if($desde_cuandot[1] == '02'){echo 'selected';};?>> Febrero </option>
+          <option value="03" <?php if($desde_cuandot[1] == '03'){echo 'selected';};?>> Marzo </option>
+          <option value="04" <?php if($desde_cuandot[1] == '04'){echo 'selected';};?>> Abril </option>
+          <option value="05" <?php if($desde_cuandot[1] == '05'){echo 'selected';};?>> Mayo </option>
+          <option value="06" <?php if($desde_cuandot[1] == '06'){echo 'selected';};?>> Junio </option>
+          <option value="07" <?php if($desde_cuandot[1] == '07'){echo 'selected';};?>> Julio </option>
+          <option value="08" <?php if($desde_cuandot[1] == '08'){echo 'selected';};?>> Agosto </option>
+          <option value="09" <?php if($desde_cuandot[1] == '09'){echo 'selected';};?>> Septiembre </option>
+          <option value="10" <?php if($desde_cuandot[1] == '10'){echo 'selected';};?>> Octubre </option>
+          <option value="11" <?php if($desde_cuandot[1] == '11'){echo 'selected';};?>> Noviembre </option>
+          <option value="12" <?php if($desde_cuandot[1] == '12'){echo 'selected';};?>> Diciembre </option>
+      </select>
+      <select name="desde_cuando_a_<?= $cantidad_dom_w?>" class="hospitalx desde_c" >
+          <option value="0" disabled="disabled" selected>Año</option>
+          <option value="1941" <?php if($desde_cuandot[0] == '1941'){echo 'selected';};?>> 1941 </option>
+          <option value="1942" <?php if($desde_cuandot[0] == '1942'){echo 'selected';};?>> 1942 </option>
+          <option value="1943" <?php if($desde_cuandot[0] == '1943'){echo 'selected';};?>> 1943 </option>
+          <option value="1944" <?php if($desde_cuandot[0] == '1944'){echo 'selected';};?>> 1944 </option>
+          <option value="1945" <?php if($desde_cuandot[0] == '1945'){echo 'selected';};?>> 1945 </option>
+          <option value="1946" <?php if($desde_cuandot[0] == '1946'){echo 'selected';};?>> 1946 </option>
+          <option value="1947" <?php if($desde_cuandot[0] == '1947'){echo 'selected';};?>> 1947 </option>
+          <option value="1948" <?php if($desde_cuandot[0] == '1948'){echo 'selected';};?>> 1948 </option>
+          <option value="1949" <?php if($desde_cuandot[0] == '1949'){echo 'selected';};?>> 1949 </option>
+          <option value="1950" <?php if($desde_cuandot[0] == '1950'){echo 'selected';};?>> 1950 </option>
+          <option value="1951" <?php if($desde_cuandot[0] == '1951'){echo 'selected';};?>> 1951 </option>
+          <option value="1952" <?php if($desde_cuandot[0] == '1952'){echo 'selected';};?>> 1952 </option>
+          <option value="1953" <?php if($desde_cuandot[0] == '1953'){echo 'selected';};?>> 1953 </option>
+          <option value="1954" <?php if($desde_cuandot[0] == '1954'){echo 'selected';};?>> 1954 </option>
+          <option value="1955" <?php if($desde_cuandot[0] == '1955'){echo 'selected';};?>> 1955 </option>
+          <option value="1956" <?php if($desde_cuandot[0] == '1956'){echo 'selected';};?>> 1956 </option>
+          <option value="1957" <?php if($desde_cuandot[0] == '1957'){echo 'selected';};?>> 1957 </option>
+          <option value="1958" <?php if($desde_cuandot[0] == '1958'){echo 'selected';};?>> 1958 </option>
+          <option value="1959" <?php if($desde_cuandot[0] == '1959'){echo 'selected';};?>> 1959 </option>
+          <option value="1960" <?php if($desde_cuandot[0] == '1960'){echo 'selected';};?>> 1960 </option>
+          <option value="1961" <?php if($desde_cuandot[0] == '1961'){echo 'selected';};?>> 1961 </option>
+          <option value="1962" <?php if($desde_cuandot[0] == '1962'){echo 'selected';};?>> 1962 </option>
+          <option value="1963" <?php if($desde_cuandot[0] == '1963'){echo 'selected';};?>> 1963 </option>
+          <option value="1964" <?php if($desde_cuandot[0] == '1964'){echo 'selected';};?>> 1964 </option>
+          <option value="1965" <?php if($desde_cuandot[0] == '1965'){echo 'selected';};?>> 1965 </option>
+          <option value="1966" <?php if($desde_cuandot[0] == '1966'){echo 'selected';};?>> 1966 </option>
+          <option value="1967" <?php if($desde_cuandot[0] == '1967'){echo 'selected';};?>> 1967 </option>
+          <option value="1968" <?php if($desde_cuandot[0] == '1968'){echo 'selected';};?>> 1968 </option>
+          <option value="1969" <?php if($desde_cuandot[0] == '1969'){echo 'selected';};?>> 1969 </option>
+          <option value="1970" <?php if($desde_cuandot[0] == '1970'){echo 'selected';};?>> 1970 </option>
+          <option value="1971" <?php if($desde_cuandot[0] == '1971'){echo 'selected';};?>> 1971 </option>
+          <option value="1972" <?php if($desde_cuandot[0] == '1972'){echo 'selected';};?>> 1972 </option>
+          <option value="1973" <?php if($desde_cuandot[0] == '1973'){echo 'selected';};?>> 1973 </option>
+          <option value="1974" <?php if($desde_cuandot[0] == '1974'){echo 'selected';};?>> 1974 </option>
+          <option value="1975" <?php if($desde_cuandot[0] == '1975'){echo 'selected';};?>> 1975 </option>
+          <option value="1976" <?php if($desde_cuandot[0] == '1976'){echo 'selected';};?>> 1976 </option>
+          <option value="1977" <?php if($desde_cuandot[0] == '1977'){echo 'selected';};?>> 1977 </option>
+          <option value="1978" <?php if($desde_cuandot[0] == '1978'){echo 'selected';};?>> 1978 </option>
+          <option value="1979" <?php if($desde_cuandot[0] == '1979'){echo 'selected';};?>> 1979 </option>
+          <option value="1980" <?php if($desde_cuandot[0] == '1980'){echo 'selected';};?>> 1980 </option>
+          <option value="1981" <?php if($desde_cuandot[0] == '1981'){echo 'selected';};?>> 1981 </option>
+          <option value="1982" <?php if($desde_cuandot[0] == '1982'){echo 'selected';};?>> 1982 </option>
+          <option value="1983" <?php if($desde_cuandot[0] == '1983'){echo 'selected';};?>> 1983 </option>
+          <option value="1984" <?php if($desde_cuandot[0] == '1984'){echo 'selected';};?>> 1984 </option>
+          <option value="1985" <?php if($desde_cuandot[0] == '1985'){echo 'selected';};?>> 1985 </option>
+          <option value="1986" <?php if($desde_cuandot[0] == '1986'){echo 'selected';};?>> 1986 </option>
+          <option value="1987" <?php if($desde_cuandot[0] == '1987'){echo 'selected';};?>> 1987 </option>
+          <option value="1988" <?php if($desde_cuandot[0] == '1988'){echo 'selected';};?>> 1988 </option>
+          <option value="1989" <?php if($desde_cuandot[0] == '1989'){echo 'selected';};?>> 1989 </option>
+          <option value="1990" <?php if($desde_cuandot[0] == '1990'){echo 'selected';};?>> 1990 </option>
+          <option value="1991" <?php if($desde_cuandot[0] == '1991'){echo 'selected';};?>> 1991 </option>
+          <option value="1992" <?php if($desde_cuandot[0] == '1992'){echo 'selected';};?>> 1992 </option>
+          <option value="1993" <?php if($desde_cuandot[0] == '1993'){echo 'selected';};?>> 1993 </option>
+          <option value="1994" <?php if($desde_cuandot[0] == '1994'){echo 'selected';};?>> 1994 </option>
+          <option value="1995" <?php if($desde_cuandot[0] == '1995'){echo 'selected';};?>> 1995 </option>
+          <option value="1996" <?php if($desde_cuandot[0] == '1996'){echo 'selected';};?>> 1996 </option>
+          <option value="1997" <?php if($desde_cuandot[0] == '1997'){echo 'selected';};?>> 1997 </option>
+          <option value="1998" <?php if($desde_cuandot[0] == '1998'){echo 'selected';};?>> 1998 </option>
+          <option value="1999" <?php if($desde_cuandot[0] == '1999'){echo 'selected';};?>> 1999 </option>
+          <option value="2000" <?php if($desde_cuandot[0] == '2000'){echo 'selected';};?>> 2000 </option>
+          <option value="2001" <?php if($desde_cuandot[0] == '2001'){echo 'selected';};?>> 2001 </option>
+          <option value="2002" <?php if($desde_cuandot[0] == '2002'){echo 'selected';};?>> 2002 </option>
+          <option value="2003" <?php if($desde_cuandot[0] == '2003'){echo 'selected';};?>> 2003 </option>
+          <option value="2004" <?php if($desde_cuandot[0] == '2004'){echo 'selected';};?>> 2004 </option>
+          <option value="2005" <?php if($desde_cuandot[0] == '2005'){echo 'selected';};?>> 2005 </option>
+          <option value="2006" <?php if($desde_cuandot[0] == '2006'){echo 'selected';};?>> 2006 </option>
+          <option value="2007" <?php if($desde_cuandot[0] == '2007'){echo 'selected';};?>> 2007 </option>
+          <option value="2008" <?php if($desde_cuandot[0] == '2008'){echo 'selected';};?>> 2008 </option>
+          <option value="2009" <?php if($desde_cuandot[0] == '2009'){echo 'selected';};?>> 2009 </option>
+          <option value="2010" <?php if($desde_cuandot[0] == '2010'){echo 'selected';};?>> 2010 </option>
+          <option value="2011" <?php if($desde_cuandot[0] == '2011'){echo 'selected';};?>> 2011 </option>
+          <option value="2012" <?php if($desde_cuandot[0] == '2012'){echo 'selected';};?>> 2012 </option>
+          <option value="2013" <?php if($desde_cuandot[0] == '2013'){echo 'selected';};?>> 2013 </option>
+          <option value="2014" <?php if($desde_cuandot[0] == '2014'){echo 'selected';};?>> 2014 </option>
+          <option value="2015" <?php if($desde_cuandot[0] == '2015'){echo 'selected';};?>> 2015 </option>
+          <option value="2016" <?php if($desde_cuandot[0] == '2016' || $desde_cuandot[0] == ''){echo 'selected';};?>> 2016 </option>
+      </select>
           </div>
       </div>
-       <script type="text/javascript">
-         ///////////// FUNCION QUE PASA EL VALOR DE LAT Y LONG DEL MARKADOR DEL MAPA AL INPUT PARA QUE SEA PROCESADO EN EL FORMULARIO
-        function valo(){
-
-        var mensaje = marker.getPosition();
-        //document.valore.value=mensaje;
-        document.getElementById("valores").value = mensaje;
-        }
-      </script>
-      <input type="hidden" name="valores" id="valores" size="40" >
+      <input type="hidden" name="lat_long<?= $cantidad_dom_w?>" id="lat_long<?= $cantidad_dom_w?>" size="40" >
       <!-- <input onclick="valo()" value="averiguar" type="button">--> 
       <div id="map<?= $cantidad_dom_w?>" class="maps_clickeable"></div>
   </div>
@@ -745,7 +943,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
       <div>Dependientes</div>
       <input type="hidden" name="numero_dependientes_ant" id="numero_dependientes_ant" value="0"/>
       <input type="hidden" name="numero_dependientes0" id="numero_dependientes0" value="<?= $row["numero_dependientes"]?>"/>
-      <select name="numero_dependientes" id="numero_dependientes"  class="hospitalx" style="height: 44px;" onchange="mas_dep()">
+      <select name="numero_dependientes" id="numero_dependientes"  class="hospitalx" onchange="mas_dep()">
           <option value="0" disabled="disabled" selected>Cantidad de Dependientes </option>
           <option value="0" <?php if($row["numero_dependientes"] == '0'){echo 'selected';};?>> 0 </option>
           <option value="1" <?php if($row["numero_dependientes"] == '1'){echo 'selected';};?>> 1 </option>
@@ -817,7 +1015,7 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
 
    <div class="campitem2" id="salud_comentario" style="display:<?php if($row["salud_problemas"] == 'Si'){echo 'block';}else{echo 'none';};?>" >
-   <div>Que Problema?</div>    
+   <div>Que Problema de salud? (agregue el parentesco)</div>    
     <div class="campc">
       <textarea name="salud_comentario"  cols="" rows="" placeholder=""><?php echo $row["salud_comentario"];?></textarea>
       <!--<input type="text" name="salud_comentario" id="textfield" placeholder="Que Problema?" value="<?php echo $row["salud_comentario"];?>"/>-->
@@ -1855,7 +2053,11 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
   <?php if ($seccion != ''){?>
   <div class="save-btns">
+    <?php if ($seccion == '1'){?>
+      <input type="button" name="add"  value="Guardar" class="rax" onclick="submit_latlong()" /> 
+    <?php }else{?>
       <input type="submit" name="add"  value="Guardar" class="rax"/> 
+    <?php };?>
       <!--<a href="agregar-cliente.php?tipo=mod&id=<?= $id?>" class="volvercli">Volver</a>-->
   </div>
   
@@ -1885,9 +2087,105 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
           </div>
           <div class="campd dosporch">
               <div>Desde Cuando vives ahi</div>
-              <input type="text" name="desde_cuando" class="hospitalx" placeholder="" value="<?php echo $row["desde_cuando"];?>"/>
+              <!--<input type="text" name="desde_cuando" class="hospitalx" placeholder="" value="<?php echo $row["desde_cuando"];?>"/>-->
+              <select name="desde_cuando_m_1" class="hospitalx desde_c">
+                  <option value="0" disabled="disabled" selected="">Mes</option>
+                  <option value="01"> Enero </option>
+                  <option value="02"> Febrero </option>
+                  <option value="03"> Marzo </option>
+                  <option value="04"> Abril </option>
+                  <option value="05"> Mayo </option>
+                  <option value="06"> Junio </option>
+                  <option value="07"> Julio </option>
+                  <option value="08"> Agosto </option>
+                  <option value="09"> Septiembre </option>
+                  <option value="10"> Octubre </option>
+                  <option value="11"> Noviembre </option>
+                  <option value="12"> Diciembre </option>
+              </select>
+              <select name="desde_cuando_a_1" class="hospitalx desde_c">
+                <option value="0" disabled="disabled" selected="">Año</option>
+                <option value="1941"> 1941 </option>
+                <option value="1942"> 1942 </option>
+                <option value="1943"> 1943 </option>
+                <option value="1944"> 1944 </option>
+                <option value="1945"> 1945 </option>
+                <option value="1946"> 1946 </option>
+                <option value="1947"> 1947 </option>
+                <option value="1948"> 1948 </option>
+                <option value="1949"> 1949 </option>
+                <option value="1950"> 1950 </option>
+                <option value="1951"> 1951 </option>
+                <option value="1952"> 1952 </option>
+                <option value="1953"> 1953 </option>
+                <option value="1954"> 1954 </option>
+                <option value="1955"> 1955 </option>
+                <option value="1956"> 1956 </option>
+                <option value="1957"> 1957 </option>
+                <option value="1958"> 1958 </option>
+                <option value="1959"> 1959 </option>
+                <option value="1960"> 1960 </option>
+                <option value="1961"> 1961 </option>
+                <option value="1962"> 1962 </option>
+                <option value="1963"> 1963 </option>
+                <option value="1964"> 1964 </option>
+                <option value="1965"> 1965 </option>
+                <option value="1966"> 1966 </option>
+                <option value="1967"> 1967 </option>
+                <option value="1968"> 1968 </option>
+                <option value="1969"> 1969 </option>
+                <option value="1970"> 1970 </option>
+                <option value="1971"> 1971 </option>
+                <option value="1972"> 1972 </option>
+                <option value="1973"> 1973 </option>
+                <option value="1974"> 1974 </option>
+                <option value="1975"> 1975 </option>
+                <option value="1976"> 1976 </option>
+                <option value="1977"> 1977 </option>
+                <option value="1978"> 1978 </option>
+                <option value="1979"> 1979 </option>
+                <option value="1980"> 1980 </option>
+                <option value="1981"> 1981 </option>
+                <option value="1982"> 1982 </option>
+                <option value="1983"> 1983 </option>
+                <option value="1984"> 1984 </option>
+                <option value="1985"> 1985 </option>
+                <option value="1986"> 1986 </option>
+                <option value="1987"> 1987 </option>
+                <option value="1988"> 1988 </option>
+                <option value="1989"> 1989 </option>
+                <option value="1990"> 1990 </option>
+                <option value="1991"> 1991 </option>
+                <option value="1992"> 1992 </option>
+                <option value="1993"> 1993 </option>
+                <option value="1994"> 1994 </option>
+                <option value="1995"> 1995 </option>
+                <option value="1996"> 1996 </option>
+                <option value="1997"> 1997 </option>
+                <option value="1998"> 1998 </option>
+                <option value="1999"> 1999 </option>
+                <option value="2000"> 2000 </option>
+                <option value="2001"> 2001 </option>
+                <option value="2002"> 2002 </option>
+                <option value="2003"> 2003 </option>
+                <option value="2004"> 2004 </option>
+                <option value="2005"> 2005 </option>
+                <option value="2006"> 2006 </option>
+                <option value="2007"> 2007 </option>
+                <option value="2008"> 2008 </option>
+                <option value="2009"> 2009 </option>
+                <option value="2010"> 2010 </option>
+                <option value="2011"> 2011 </option>
+                <option value="2012"> 2012 </option>
+                <option value="2013"> 2013 </option>
+                <option value="2014"> 2014 </option>
+                <option value="2015"> 2015 </option>
+                <option value="2016" selected> 2016 </option>
+            </select>
         </div>
     </div>
+        <input type="hidden" name="lat_long" id="lat_long" size="40">
+        <div id="map" class="maps_clickeable"></div>
 </div>
 
 <div id="copydep">
@@ -2064,6 +2362,11 @@ while($row2i = mysql_fetch_array($result2i)){  $cant_dom_map_ini0 = $cant_dom_ma
 
 
 <script>
+
+function submit_latlong(){
+  valo();
+  document.getElementById("Registro_client").submit();
+}
 function elfamiliar(num){
    var id = "ref_tipo" + num;
     var CantDom= document.getElementById(id).value;
@@ -2377,7 +2680,8 @@ function mas_carr(){
 
     clonedDiv.attr("id", nuevaid); // Cambio ID
     var segundo_p2 = document.getElementById('domicilios_extras');// Despues de quien lo quiero meter
-    $('#domicilios_extras').append(clonedDiv);
+    $('#domicilios_extras').prepend(clonedDiv);
+    //$('#domicilios_extras').append(clonedDiv);
     var padre = document.getElementById(nuevaid).getElementsByTagName("div");
     var padre_b = padre[0].getElementsByTagName("div");
     padre_b[0].innerHTML = "Domicilio " + nuevovalor;// Cambio valor de texto
@@ -2385,9 +2689,14 @@ function mas_carr(){
 
     document.getElementById(nuevaid).getElementsByTagName("input")[0].name = "domicilio" + nuevovalor;// cambio el name de domicilio
     document.getElementById(nuevaid).getElementsByTagName("input")[1].name = "calles" + nuevovalor;// cambio el name de calles
-    document.getElementById(nuevaid).getElementsByTagName("input")[2].name = "desde_cuando" + nuevovalor;// cambio el name de desde_cuando
+    document.getElementById(nuevaid).getElementsByTagName("input")[2].name = "lat_long" + nuevovalor;// cambio el name de desde_cuando
+    document.getElementById(nuevaid).getElementsByTagName("input")[2].id = "lat_long" + nuevovalor;
+    document.getElementById(nuevaid).getElementsByTagName("select")[0].name = "desde_cuando_m_" + nuevovalor;
+    document.getElementById(nuevaid).getElementsByTagName("select")[1].name = "desde_cuando_a_" + nuevovalor;
+    document.getElementById(nuevaid).getElementsByTagName("div")[8].id = 'map' + nuevovalor;
 
     document.getElementById('numero_domicilios').value = nuevovalor;
+    init_var(nuevovalor);
   }
 </script>
 <script type="text/javascript" src="./jquery.js"></script>
